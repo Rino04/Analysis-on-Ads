@@ -1,0 +1,321 @@
+---
+title: "Jackson Ip Week 12"
+author: "Jackson Kyalo"
+date: "8/26/2021"
+output: html_document
+---
+# Define the Question
+A Kenyan entrepreneur has created an online cryptography course and would want to advertise it on her blog. She currently targets audiences originating from various countries. In the past, she ran ads to advertise a related course on the same blog and collected data in the process. She would now like to employ your services as a Data Science Consultant to help her identify which individuals are most likely     to click on her ads. 
+
+# The metric for success
+This project will be successful if we are able to determine which individuals are most likely to click on the ads.
+
+
+
+# The Outline context
+The number of clicks an ad has helps understand how well the ad is being received by its audience. Ads that are targeted to the right audience receive the highest number of clicks. In our case determining the best audience for the ads will help company grow as well as increase the number of clicks and reach. 
+
+# Experimental design
+1. Define the Questions.
+2. Import, load and preview the data.
+3. Data Cleaning.
+4. Data Analysis.
+5. Conclusion and Recommendation.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Importing the libraries
+```{r}
+#Import the data library
+library(data.table)
+```
+### Load the dataset
+```{r}
+#Load our data
+dt=read.csv('C:/Users/Rino/Desktop/Remote/advertising.csv')
+```
+
+### Preview the data
+```{r}
+# preview the head
+head(dt)
+```
+
+```{r}
+#Change the male column name to be gender
+names(dt)[names(dt)== 'Male']<-'Gender'
+```
+
+
+### Preview tail
+```{r}
+tail(dt)
+```
+### Check the info
+```{r}
+str(dt)
+```
+
+```{r}
+#dt$Date <- as.Date(df$Timestamp)
+#df$Time <- format(df$Timestamp,"%H:%M:%S")
+```
+
+
+### Check the shape
+```{r}
+dim(dt)
+#Our code has 1000 rows and 10 columns
+```
+
+
+# Data Cleaning
+
+### Check for missing data(Null vaalues)
+```{r}
+sum(is.na(dt))
+```
+Our data has no missing data
+
+### Check for duplicates
+```{r}
+#checking for duplicates
+duplicated <- dt[duplicated(dt),]
+duplicated
+```
+There are no duplicated rows/values in our data
+
+### Check for outliers
+```{r}
+### Identify numeric cols
+nums <- unlist(lapply(dt, is.numeric)) 
+y<- colnames(dt[nums])
+y
+```
+
+### Check fo outliers
+```{r}
+boxplot(dt[c('Age','Daily.Internet.Usage','Clicked.on.Ad','Daily.Time.Spent.on.Site','Gender')])
+```
+
+```{r}
+# checking for outliers on Daily Internet Usage
+boxplot(dt$Daily.Internet.Usage)
+```
+```{r}
+# checking for outliers on Age
+boxplot(dt$Age)
+```
+
+
+```{r}
+# checking for outliers on Area.Income
+boxplot(dt$Area.Income)
+```
+There are outliers in area income column
+```{r}
+boxplot.stats(dt$Area.Income)$out
+#checking the values in area income that are outliers
+```
+```{r}
+# checking for outliers on Daily.Time.Spent.on.Site
+boxplot(dt$Daily.Time.Spent.on.Site)
+```
+```{r}
+# checking for outliers on Male
+boxplot(dt$Gender)
+```
+
+```{r}
+# checking for outliers on Clicked.on.Ad
+boxplot(dt$Clicked.on.Ad)
+```
+There are no outliers in our data except Area.Income.
+
+# Data Analysis
+
+## Univarient Analysis
+### Measure of central tendacy
+```{r}
+#Getting the statistical summaries of the data
+summary(dt)
+```
+From the above we can see that maximum daily time spent on site is 91 mins while the minimum time spent is 32 mins. In average time spent on the blog is 65 minutes. The maximum age of the customers visiting the 61 years while the minimum age is 19 years. However the average age of viewers is 35 years. The average income earned by their viewers is 55,000 with the maximum amount earned being 79,000 and minimum amount is 13996.
+
+
+### Measure of dispersion
+```{r}
+#create a function
+summary.list = function(x)list(
+ Variance=var(x, na.rm=TRUE),
+ Std.Dev=sd(x, na.rm=TRUE),
+ Coeff.Variation.Prcnt=sd(x, na.rm=TRUE)/mean(x, na.rm=TRUE)*100,
+ Std.Error=sd(x, na.rm=TRUE)/sqrt(length(x[!is.na(x)]))
+)
+```
+
+Calling the function for each column
+```{r}
+#For Daily.Time.Spent.on.Site
+summary.list(dt$Daily.Time.Spent.on.Site)
+```
+
+```{r}
+#For Age
+summary.list(dt$Age)
+```
+```{r}
+#For Daily.Time.Spent.on.Site
+summary.list(dt$Area.Income)
+```
+```{r}
+#For Daily.Internet.Usage
+summary.list(dt$Daily.Internet.Usage)
+```
+#### Summaries when ad is cliecked
+```{r}
+#Get the summaries when there is a click
+dt.sub <- subset(dt, Clicked.on.Ad == 1)
+```
+Summaries
+```{r}
+summary(dt.sub)
+```
+When there was a click on the ad, the average time spent was 53 mins, with the average age of the viewers being 40 years. The average income of the viewers who viewed the ads was 48,000 and they spent in an average 145 minutes on the internet.
+
+### Distribution of Numeric columns 
+```{r}
+#For Age
+hist(dt$Age, 
+     main = "Daily Time Spent on Site",
+     xlab = "Daily Time Spent on Site",
+     col = "aquamarine2")
+```
+
+Most respondents fall in the age bracket 25-40 years.
+```{r}
+# Histograms for Daily.Time.Spent.on.Site
+hist(dt$Daily.Time.Spent.on.Site,
+  main = "Daily Time Spent on Site",
+  xlab = "Daily Time Spent on Site",
+  col = "cyan1")
+```
+Daily time speant on site is skewed to the left.Most time spent is between 75 mins to 85 mins.
+```{r}
+# Histograms for Area Income
+hist(dt$Area.Income,
+  main = "Area Income",
+  xlab = "Area Income",
+  col = "deepskyblue")
+```
+The area income columns is skewed to the left.Most respondent spend between 55,000 to 7,0000.
+
+
+```{r}
+# Histograms for Area Income
+df<-table(dt$Gender)
+```
+```{r}
+# Create a vector of labels
+
+pie(df, 
+    labels <- c("Males", "Females"),
+    col = c("cyan", "pink"),
+    main="Gender")
+```
+
+
+```{r}
+# Histograms for Daily.Time.Spent.on.Site
+hist(dt$Daily.Internet.Usage,
+  main = "Daily Internet Usage",
+  xlab = "Daily Internt Usage",
+  col = "orangered")
+```
+## Bivarient Analysis
+
+### Correlation matrix
+```{r}
+cor(dt[,unlist(lapply(dt, is.numeric))])
+```
+The Table shows the correlations between each columns. The most correlated features are daily internet usage and daily time spent on the site while the least correlated items are clicks on ad and daily internet usage. There is positive correlation between age an clicks on ads. 
+
+## Scatter plots
+Let's plot a scatter plot for age and daily time spent on site.
+```{r}
+plot(dt$Age,dt$Daily.Time.Spent.on.Site, 
+     xlab = "Age Distribution",
+     ylab = "Time Spent on Site",
+     col="skyblue4")
+```
+Most customers spending the largest amount of time in the sites are between 37yrs and 45 years
+
+Let's plot a scatter plot for age and daily internet usage.
+```{r}
+plot(dt$Age,dt$Daily.Internet.Usage, 
+     xlab = "Age Distribution",
+     ylab = "Internet Usage",
+     col="skyblue3")
+```
+Let's plot a scatter plot for age and Area Income.
+```{r}
+plot(dt$Age,dt$Area.Income, 
+     xlab = "Age Distribution",
+     ylab = "Area income",
+     col="skyblue3")
+```
+Most of the customers with the highest area income are between 40 and 45 years.
+
+
+### Covariance
+```{r}
+#Covariance between age and daily time spent
+cov(dt$Age, dt$Daily.Time.Spent.on.Site)
+```
+The covariance of Age and Daily.Time.Usage variable is about -46.17415, It indicates a negative linear relationship between the two variables
+
+```{r}
+# Covariance between age and daily internet usage 
+cov(dt$Age, dt$Daily.Internet.Usage)
+```
+The covariance of Age and Daily.Internet.Usage variable is about -141.6348, It indicates a negative linear relationship between the two variables
+```{r}
+#Covariance between age and area income
+cov(dt$Age, dt$Area.Income)
+```
+The covariance of Age and area income variable is about -21520.93, It indicates a negative linear relationship between the two features.
+```{r}
+#Covariance between age and clicks
+cov(dt$Age, dt$Clicked.on.Ad)
+```
+The covariance of Age and clicks on ad variable is about 2.164665, It indicates a positive linear relationship between the two features.
+
+```{r}
+#Covariance between age and gender
+cov(dt$Age, dt$Gender)
+```
+The covariance of Age and gender variable is about  -0.09242142, It indicates a negative linear relationship between the two features.
+
+# Conclusion
+1. From the above we can see that maximum daily time spent on site is 91 mins while the minimum time spent is 32 mins. In average time spent on the blog is 65 minutes. 
+2. The maximum age of the customers visiting the 61 years while the minimum age is 19 years. However the average age of viewers is 35 years. 
+3. The average income earned by their viewers is 55,000 with the maximum amount earned being 79,000 and minimum amount is 13996.
+4. When there was a click on the ad, the average time spent was 53 mins, with the average age of the viewers being 40 years. The average income of the viewers who viewed the ads was 48,000 and they spent in an average 145 minutes on the internet.
+5. Most respondents fall in the age bracket 25-40 years.
+6. Daily time speant on site is skewed to the left.Most time spent is between 75 mins to 85 mins.
+7. The area income columns is skewed to the left.Most respondent spend between 55,000 to 7,0000.
+8. The Table shows the correlations between each columns. The most correlated features are daily internet usage and daily time spent on the site while the least correlated items are clicks on ad and daily internet usage. There is positive correlation between age an clicks on ads. 
+9. Most customers spending the largest amount of time in the sites are between 37yrs and 45 years
+
+# Recommendation
+1. The ads should target people with an income between 50,000 and 70,000 since they are the people most interested with the ad. 
+2. We recommend that ads to be tailor to suit viewers of the age group between 25 years and 40 years.
+3. Our client should tailor the course to be less than 85 mins or between 75 mins and 85 mins.
+
+
+
+
+
+
